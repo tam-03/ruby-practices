@@ -1,9 +1,9 @@
 # frozen_string_literal: true
+
 require 'optparse'
 require 'etc'
 
 class Ls
-
   def initialize(command)
     @files = Ls.get_file(command)
   end
@@ -16,17 +16,16 @@ class Ls
   end
 
   def file_detail
-    @files.map{ |file| FileDetail.new(file)}
+    @files.map { |file| FileDetail.new(file) }
   end
 
   def files_str_max_length
-    @files.map{ |file| FileDetail.new(file).file_length}.max
+    @files.map { |file| FileDetail.new(file).file_length }.max
   end
 
   def block_total
     @files.map { |file| FileDetail.new(file).block }.sum
   end
-
 end
 
 class Print
@@ -36,32 +35,31 @@ class Print
 
   def horizontal
     str_max_length = @files.files_str_max_length + 2
-    (0..6).map { |num|
+    (0..6).map do |num|
       lines = []
-      @files.file_detail.each_slice(7) { |files|
+      @files.file_detail.each_slice(7) do |files|
         lines << files[num]
-      }
-      lines.map { |file|
+      end
+      lines.map do |file|
         print file.to_s.ljust(str_max_length)
-      }
+      end
       puts "\n"
-    }
+    end
   end
 
   def list
     puts " total #{@files.block_total}"
-    @files.file_detail.each { |file|
+    @files.file_detail.each do |file|
       print file.type
       print file.parmission
-      print "#{file.link} "
+      print "#{file.link.rjust(3)} "
       print "#{file.uid_name} "
       print "#{file.gid_name} "
       print "#{file.size.to_s.rjust(5)} "
       print file.update_day
       puts file.to_s
-    }
+    end
   end
-
 end
 
 class FileDetail
@@ -98,7 +96,7 @@ class FileDetail
 
   def link
     file_link = File.stat(@file).nlink.to_s
-    file_link.rjust(3).to_s
+    file_link
   end
 
   def uid_name
@@ -110,7 +108,7 @@ class FileDetail
   end
 
   def size
-    file_size = File.stat(@file).size
+    File.stat(@file).size
   end
 
   def update_day
@@ -118,7 +116,6 @@ class FileDetail
     mtime_a = mtime.to_a
     mtime_s = mtime.strftime('%R')
     (mtime_a[4].to_s.rjust(2) + mtime_a[3].to_s.rjust(3)).to_s + ' ' + mtime_s + ' '
-    # monthを文字列に変更
   end
 
   def file_length
@@ -135,21 +132,20 @@ class FileDetail
 end
 
 class Command
-
   def initialize(command = ARGV.getopts('arl'))
     @command = command
   end
 
   def a_option
-   return @command["a"]
+    @command['a']
   end
 
   def r_option
-   return @command["r"]
+    @command['r']
   end
 
   def l_option
-   return @command["l"]
+    @command['l']
   end
 end
 
