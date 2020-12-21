@@ -95,8 +95,7 @@ class FileDetail
   end
 
   def link
-    file_link = File.stat(@file).nlink.to_s
-    file_link
+    File.stat(@file).nlink.to_s
   end
 
   def uid_name
