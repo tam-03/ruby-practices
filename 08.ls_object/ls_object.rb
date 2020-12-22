@@ -4,28 +4,30 @@ require 'optparse'
 require 'etc'
 
 class Ls
-  def initialize(command)
-    @files = Ls.get_file(command)
+
+  def initialize(command = Command.new)
+    @command = command
+    @files = Dir.entries('.').sort - Dir['.*']
+    @files = Dir.entries('.').sort if @command.a_option
+    @files.reverse! if @command.r_option
   end
 
-  def self.get_file(command)
-    file_array = Dir.entries('.').sort - Dir['.*']
-    file_array = Dir.entries('.').sort if command.a_option
-    file_array.reverse! if command.r_option
-    file_array
+  def print
+    @command.l_option ? Print.new(@files).list : Print.new(@files).horizontal
   end
 
-  def file_detail
-    @files.map { |file| FileDetail.new(file) }
+  def self.file_detail(files)
+    files.map { |file| FileDetail.new(file) }
   end
 
-  def files_str_max_length
-    @files.map { |file| FileDetail.new(file).file_length }.max
+  def self.files_str_max_length(files)
+    files.map { |file| FileDetail.new(file).file_length }.max
   end
 
-  def block_total
-    @files.map { |file| FileDetail.new(file).block }.sum
+  def self.block_total(files)
+    files.map { |file| FileDetail.new(file).block }.sum
   end
+
 end
 
 class Print
@@ -34,12 +36,10 @@ class Print
   end
 
   def horizontal
-    str_max_length = @files.files_str_max_length + 2
+    str_max_length = Ls.files_str_max_length(@files) + 2
     (0..6).map do |num|
       lines = []
-      @files.file_detail.each_slice(7) do |files|
-        lines << files[num]
-      end
+      Ls.file_detail(@files).each_slice(7) { |files| lines << files[num] }
       lines.map do |file|
         print file.to_s.ljust(str_max_length)
       end
@@ -48,10 +48,10 @@ class Print
   end
 
   def list
-    puts " total #{@files.block_total}"
-    @files.file_detail.each do |file|
+    puts " total #{Ls.block_total(@files)}"
+    Ls.file_detail(@files).each do |file|
       print file.type
-      print file.parmission
+      print file.permission
       print "#{file.link.rjust(3)} "
       print "#{file.uid_name} "
       print "#{file.gid_name} "
@@ -73,15 +73,12 @@ class FileDetail
       "file": '-',
       "directory": 'd',
       "link": 'l'
-    }[:"#{type}"]
+    }[type.to_sym]
   end
 
-  def parmission
-    mode = File.stat(@file).world_readable?
-    parmission = format('%o', mode)
-    pms = parmission.to_s.split(//).to_a
-    (0..2).each do |i|
-      pms[i] = {
+  def permission
+    format('%o', File.stat(@file).world_readable?).chars.map { |pms|
+      {
         "7": 'rwx',
         "6": 'rw-',
         "5": 'r-x',
@@ -89,9 +86,8 @@ class FileDetail
         "3": '-wx',
         "2": '-w-',
         "1": '--x'
-      }[:"#{pms[i]}"]
-      return pms.join if i == 2
-    end
+      }[pms.to_sym]
+    }.join
   end
 
   def link
@@ -148,6 +144,4 @@ class Command
   end
 end
 
-command = Command.new
-files = Ls.new(command)
-command.l_option ? Print.new(files).list : Print.new(files).horizontal
+Ls.new.print
