@@ -4,16 +4,15 @@ require 'optparse'
 require 'etc'
 
 class Ls
-
-  def initialize(command = Command.new)
-    @command = command
+  def initialize(option = Option.new)
+    @option = option
     @files = Dir.entries('.').sort - Dir['.*']
-    @files = Dir.entries('.').sort if @command.a_option
-    @files.reverse! if @command.r_option
+    @files = Dir.entries('.').sort if @option.a_option
+    @files.reverse! if @option.r_option
   end
 
   def print
-    @command.l_option ? Print.new(@files).list : Print.new(@files).horizontal
+    @option.l_option ? Print.new(@files).list : Print.new(@files).horizontal
   end
 
   def self.file_detail(files)
@@ -27,7 +26,6 @@ class Ls
   def self.block_total(files)
     files.map { |file| FileDetail.new(file).block }.sum
   end
-
 end
 
 class Print
@@ -37,11 +35,11 @@ class Print
 
   def horizontal
     str_max_length = Ls.files_str_max_length(@files) + 2
-    (0..6).map do |num|
+    (0..5).map do |num|
       lines = []
-      Ls.file_detail(@files).each_slice(7) { |files| lines << files[num] }
+      Ls.file_detail(@files).each_slice(6) { |file| lines << file[num] }
       lines.map do |file|
-        print file.to_s.ljust(str_max_length)
+        print file.file.ljust(str_max_length) unless file.nil?
       end
       puts "\n"
     end
@@ -57,37 +55,28 @@ class Print
       print "#{file.gid_name} "
       print "#{file.size.to_s.rjust(5)} "
       print file.update_day
-      puts file.to_s
+      puts file.file
     end
   end
 end
 
 class FileDetail
+  attr_reader :file
+
   def initialize(file)
     @file = file
   end
 
   def type
-    type = File.ftype(@file)
     {
       "file": '-',
       "directory": 'd',
       "link": 'l'
-    }[type.to_sym]
+    }[File.ftype(@file).to_sym]
   end
 
   def permission
-    format('%o', File.stat(@file).world_readable?).chars.map { |pms|
-      {
-        "7": 'rwx',
-        "6": 'rw-',
-        "5": 'r-x',
-        "4": 'r--',
-        "3": '-wx',
-        "2": '-w-',
-        "1": '--x'
-      }[pms.to_sym]
-    }.join
+    format('%o', File.stat(@file).world_readable?).chars.map { |pms| str_permission_convert(pms) }.join
   end
 
   def link
@@ -121,26 +110,36 @@ class FileDetail
     File.stat(@file).blocks
   end
 
-  def to_s
-    @file
+  private
+
+  def str_permission_convert(int)
+    {
+      "7": 'rwx',
+      "6": 'rw-',
+      "5": 'r-x',
+      "4": 'r--',
+      "3": '-wx',
+      "2": '-w-',
+      "1": '--x'
+    }[int.to_sym]
   end
 end
 
-class Command
-  def initialize(command = ARGV.getopts('arl'))
-    @command = command
+class Option
+  def initialize(option = ARGV.getopts('arl'))
+    @option = option
   end
 
   def a_option
-    @command['a']
+    @option['a']
   end
 
   def r_option
-    @command['r']
+    @option['r']
   end
 
   def l_option
-    @command['l']
+    @option['l']
   end
 end
 
