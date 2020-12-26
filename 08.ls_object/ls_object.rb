@@ -14,18 +14,6 @@ class Ls
   def print
     @option.l_option ? Print.new(@files).list : Print.new(@files).horizontal
   end
-
-  def self.file_detail(files)
-    files.map { |file| FileDetail.new(file) }
-  end
-
-  def self.files_str_max_length(files)
-    files.map { |file| FileDetail.new(file).file_length }.max
-  end
-
-  def self.block_total(files)
-    files.map { |file| FileDetail.new(file).block }.sum
-  end
 end
 
 class Print
@@ -34,10 +22,10 @@ class Print
   end
 
   def horizontal
-    str_max_length = Ls.files_str_max_length(@files) + 2
+    str_max_length = files_str_max_length + 2
     (0..5).map do |num|
       lines = []
-      Ls.file_detail(@files).each_slice(6) { |file| lines << file[num] }
+      file_detail.each_slice(6) { |file| lines << file[num] }
       lines.map do |file|
         print file.file.ljust(str_max_length) unless file.nil?
       end
@@ -46,8 +34,8 @@ class Print
   end
 
   def list
-    puts " total #{Ls.block_total(@files)}"
-    Ls.file_detail(@files).each do |file|
+    puts " total #{block_total}"
+    file_detail.each do |file|
       print file.type
       print file.permission
       print "#{file.link.rjust(3)} "
@@ -57,6 +45,20 @@ class Print
       print file.update_day
       puts file.file
     end
+  end
+
+  private
+
+  def file_detail
+    @files.map { |file| FileDetail.new(file) }
+  end
+
+  def files_str_max_length
+    @files.map { |file| FileDetail.new(file).file_length }.max
+  end
+
+  def block_total
+    @files.map { |file| FileDetail.new(file).block }.sum
   end
 end
 
