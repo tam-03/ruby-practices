@@ -2,7 +2,7 @@
 
 require 'optparse'
 
-class Wc
+class Main
   def initialize
     @option = ARGV.getopts('l')
     file = OptionParser.new.parse!(ARGV)
@@ -88,4 +88,4 @@ class View
   end
 end
 
-Wc.new.run
+Main.new.run
