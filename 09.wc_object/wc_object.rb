@@ -33,7 +33,7 @@ class InputFile
   end
 end
 
-class StandardInput < InputFile
+class StandardInput
   def initialize
     @standard_input = $stdin.read
   end
