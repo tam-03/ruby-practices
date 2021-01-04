@@ -62,24 +62,24 @@ class View
     @files_or_stdins.map do |wc|
       puts "#{space(wc.number_of_lines)} #{space(wc.word_count) unless @option['l']} #{space(wc.byte_size) unless @option['l']} #{space(wc.file) if wc.class == InputFile}"
     end
-    puts total if @files_or_stdins.size >= 2
+    puts total_text if @files_or_stdins.size >= 2
   end
 
   private
 
-  def total
-    "#{space(number_of_lines_sum)} #{space(word_count_sum) unless @option['l']} #{space(byte_size_sum) unless @option['l']} total"
+  def total_text
+    "#{space(total_number_of_lines)} #{space(total_word_count) unless @option['l']} #{space(total_byte_size) unless @option['l']} total"
   end
 
-  def number_of_lines_sum
+  def total_number_of_lines
     @files_or_stdins.sum(&:number_of_lines)
   end
 
-  def word_count_sum
+  def total_word_count
     @files_or_stdins.sum(&:word_count)
   end
 
-  def byte_size_sum
+  def total_byte_size
     @files_or_stdins.sum(&:byte_size)
   end
 
