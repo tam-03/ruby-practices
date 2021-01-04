@@ -72,15 +72,15 @@ class View
   end
 
   def number_of_lines_sum
-    @files_or_stdins.map(&:number_of_lines).sum
+    @files_or_stdins.sum(&:number_of_lines)
   end
 
   def word_count_sum
-    @files_or_stdins.map(&:word_count).sum
+    @files_or_stdins.sum(&:word_count)
   end
 
   def byte_size_sum
-    @files_or_stdins.map(&:byte_size).sum
+    @files_or_stdins.sum(&:byte_size)
   end
 
   def space(int)
