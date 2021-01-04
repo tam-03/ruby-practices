@@ -10,7 +10,7 @@ class Main
   end
 
   def run
-    View.new(@files_or_stdins, @option).screen
+    View.new(@files_or_stdins, @option).output
   end
 end
 
@@ -58,7 +58,7 @@ class View
     @files_or_stdins = files_or_stdins
   end
 
-  def screen
+  def output
     @files_or_stdins.map do |wc|
       puts "#{space(wc.number_of_lines)} #{space(wc.word_count) unless @option['l']} #{space(wc.byte_size) unless @option['l']} #{space(wc.file) if wc.class == InputFile}"
     end
