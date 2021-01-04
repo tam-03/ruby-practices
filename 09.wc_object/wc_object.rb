@@ -6,11 +6,11 @@ class Main
   def initialize
     @option = ARGV.getopts('l')
     file = OptionParser.new.parse!(ARGV)
-    @file_or_ipt = file.empty? ? Array.new(1, StandardInput.new) : Array.new(file.map { |f| InputFile.new(f) })
+    @files_or_stdins = file.empty? ? Array.new(1, StandardInput.new) : Array.new(file.map { |f| InputFile.new(f) })
   end
 
   def run
-    View.new(@file_or_ipt, @option).screen
+    View.new(@files_or_stdins, @option).screen
   end
 end
 
@@ -53,16 +53,16 @@ class StandardInput
 end
 
 class View
-  def initialize(file_or_ipt, option = nil)
+  def initialize(files_or_stdins, option = nil)
     @option = option
-    @file_or_ipt = file_or_ipt
+    @files_or_stdins = files_or_stdins
   end
 
   def screen
-    @file_or_ipt.map do |wc|
+    @files_or_stdins.map do |wc|
       puts "#{space(wc.number_of_lines)} #{space(wc.word_count) unless @option['l']} #{space(wc.byte_size) unless @option['l']} #{space(wc.file) if wc.class == InputFile}"
     end
-    puts total if @file_or_ipt.size >= 2
+    puts total if @files_or_stdins.size >= 2
   end
 
   private
@@ -72,15 +72,15 @@ class View
   end
 
   def number_of_lines_sum
-    @file_or_ipt.map(&:number_of_lines).sum
+    @files_or_stdins.map(&:number_of_lines).sum
   end
 
   def word_count_sum
-    @file_or_ipt.map(&:word_count).sum
+    @files_or_stdins.map(&:word_count).sum
   end
 
   def byte_size_sum
-    @file_or_ipt.map(&:byte_size).sum
+    @files_or_stdins.map(&:byte_size).sum
   end
 
   def space(int)
