@@ -6,7 +6,7 @@ class Main
   def initialize
     @option = ARGV.getopts('l')
     file = OptionParser.new.parse!(ARGV)
-    @file_or_ipt = file.empty? ? Array.new(1, StandardInput.new) : Array.new(file.map { |f| InputtedFile.new(f) })
+    @file_or_ipt = file.empty? ? Array.new(1, StandardInput.new) : Array.new(file.map { |f| InputFile.new(f) })
   end
 
   def run
@@ -14,7 +14,7 @@ class Main
   end
 end
 
-class InputtedFile
+class InputFile
   attr_reader :file
   def initialize(file)
     @file = file
@@ -33,7 +33,7 @@ class InputtedFile
   end
 end
 
-class StandardInput < InputtedFile
+class StandardInput < InputFile
   def initialize
     @standard_input = $stdin.read
   end
@@ -44,7 +44,7 @@ class StandardInput < InputtedFile
 
   def word_count
     words = @standard_input.unpack('H*')
-    words[0].gsub(/20|0c|0a|0d|09|0b|a0|a0/, ' ').split(' ').size
+    words[0].gsub(/20|0c|0a|0d|09|0b|a0/, ' ').split(' ').size
   end
 
   def byte_size
@@ -60,7 +60,7 @@ class View
 
   def screen
     @file_or_ipt.map do |wc|
-      puts "#{space(wc.number_of_lines)} #{space(wc.word_count) unless @option['l']} #{space(wc.byte_size) unless @option['l']} #{space(wc.file) if wc.class == InputtedFile}"
+      puts "#{space(wc.number_of_lines)} #{space(wc.word_count) unless @option['l']} #{space(wc.byte_size) unless @option['l']} #{space(wc.file) if wc.class == InputFile}"
     end
     puts total if @file_or_ipt.size >= 2
   end
